@@ -1,0 +1,54 @@
+<!-- main_app/templates/main_app/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}Welcome to AquaFlow!{% endblock %}
+
+{% block content %}
+    <section class="text-center py-16 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg shadow-lg">
+        <h1 class="text-5xl font-extrabold mb-4 animate-fade-in-down">Sariwang Tubig, Libreng Paghatid!</h1>
+        <p class="text-xl mb-8 opacity-90 animate-fade-in-up">Ang iyong mapagkakatiwalaang pinagmumulan ng purong, mineral, at alkaline na tubig.</p>
+        <a href="{% url 'product_list' %}" class="bg-white text-blue-700 hover:bg-blue-100 px-8 py-3 rounded-full text-lg font-semibold shadow-xl transition transform hover:scale-105 duration-300">
+            Mag-order Na!
+        </a>
+    </section>
+
+    <section class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white p-8 rounded-lg shadow-lg text-center transform hover:scale-105 transition duration-300">
+            <i class="fas fa-truck text-blue-500 text-5xl mb-4"></i>
+            <h2 class="text-2xl font-bold mb-2">Libreng Paghatid</h2>
+            <p class="text-gray-600">Tangkilikin ang libreng paghatid diretso sa iyong pintuan, sa bawat oras.</p>
+        </div>
+        <div class="bg-white p-8 rounded-lg shadow-lg text-center transform hover:scale-105 transition duration-300">
+            <i class="fas fa-water text-blue-500 text-5xl mb-4"></i>
+            <h2 class="text-2xl font-bold mb-2">Puro at Ligtas</h2>
+            <p class="text-gray-600">Ang aming tubig ay dumadaan sa mahigpit na proseso ng paglilinis para sa iyong kalusugan.</p>
+        </div>
+        <div class="bg-white p-8 rounded-lg shadow-lg text-center transform hover:scale-105 transition duration-300">
+            <i class="fas fa-handshake text-blue-500 text-5xl mb-4"></i>
+            <h2 class="text-2xl font-bold mb-2">Maasahang Serbisyo</h2>
+            <p class="text-gray-600">Inuuna namin ang napapanahong paghahatid at mahusay na suporta sa customer.</p>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }} {# Isama ang JS ng base.html #}
+    <style>
+        /* Basic animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-down {
+            animation: fadeInDown 0.8s ease-out forwards;
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out 0.3s forwards; /* Bahagyang pagkaantala */
+        }
+    </style>
+{% endblock %}
+

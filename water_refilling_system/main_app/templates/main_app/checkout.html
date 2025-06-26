@@ -1,0 +1,286 @@
+<!-- main_app/templates/main_app/checkout.html -->
+{% extends 'base.html' %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<h1 class="text-4xl font-extrabold text-gray-900 mb-8 text-center">Checkout</h1>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Kaliwang Column: Mga Delivery Address -->
+    <div class="lg:col-span-2 bg-white p-8 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">1. Delivery Address</h2>
+
+        {% if addresses %}
+            <div class="space-y-4 mb-8">
+                {% for address in addresses %}
+                    <label class="flex items-center bg-gray-50 p-4 rounded-md border cursor-pointer hover:bg-gray-100 transition">
+                        <input type="radio" name="selected_address" value="{{ address.id }}"
+                               class="form-radio h-5 w-5 text-blue-600 mr-3"
+                               {% if address.is_default %}checked{% endif %} data-address-id="{{ address.id }}">
+                        <div>
+                            <p class="font-semibold text-lg">{{ address.street_address }}</p>
+                            <p class="text-gray-600">{{ address.city }}, {{ address.province }} {% if address.zip_code %}- {{ address.zip_code }}{% endif %}</p>
+                        </div>
+                    </label>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="mb-6 text-gray-600">Walang na-save na mga delivery address. Pakidagdag ang isa sa ibaba.</p>
+        {% endif %}
+
+        <button id="add-address-toggle" class="bg-blue-500 text-white px-5 py-2 rounded-md hover:bg-blue-600 transition duration-300 mb-6">
+            <i class="fas fa-plus mr-2"></i>Magdagdag ng Bagong Address
+        </button>
+
+        <div id="add-address-form-container" class="hidden bg-gray-100 p-6 rounded-lg shadow-inner mt-4">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Magdagdag ng Bagong Delivery Address</h3>
+            <form method="post" action="{% url 'checkout' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_address">
+                <div class="mb-4">
+                    <label for="{{ address_form.street_address.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">Numero at Pangalan ng Kalye:</label>
+                    {{ address_form.street_address }}
+                    {% if address_form.street_address.errors %}
+                        <p class="text-red-500 text-xs italic">{{ address_form.street_address.errors }}</p>
+                    {% endif %}
+                </div>
+                <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ address_form.city.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">Lungsod:</label>
+                        {{ address_form.city }}
+                        {% if address_form.city.errors %}
+                            <p class="text-red-500 text-xs italic">{{ address_form.city.errors }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ address_form.province.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">Probinsya:</label>
+                        {{ address_form.province }}
+                        {% if address_form.province.errors %}
+                            <p class="text-red-500 text-xs italic">{{ address_form.province.errors }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label for="{{ address_form.zip_code.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">Zip Code:</label>
+                    {{ address_form.zip_code }}
+                </div>
+                <div class="mb-6 flex items-center">
+                    {{ address_form.is_default }}
+                    <label for="{{ address_form.is_default.id_for_label }}" class="ml-2 text-gray-700 text-sm">Itakda bilang default na address</label>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-blue-700 transition duration-300">
+                    I-save ang Address
+                </button>
+            </form>
+        </div>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 mt-12">2. Suriin ang Order</h2>
+        <div id="checkout-cart-items" class="space-y-4 mb-8 bg-gray-50 p-4 rounded-md">
+            <!-- Ang mga item sa cart ay ipapakita dito ng JS -->
+            <p id="checkout-cart-empty-message" class="text-center text-gray-600">Walang laman ang iyong cart. Pakidagdag ng mga item upang magpatuloy.</p>
+        </div>
+
+        <div class="mb-6">
+            <label for="delivery_notes" class="block text-gray-700 text-sm font-bold mb-2">Mga Tala sa Paghahatid (Opsyonal):</label>
+            <textarea id="delivery_notes" name="delivery_notes" rows="3" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="hal., Iwanan sa pintuan, Tumawag bago dumating, atbp."></textarea>
+        </div>
+
+    </div>
+
+    <!-- Kanang Column: Buod ng Order -->
+    <div class="lg:col-span-1 bg-white p-8 rounded-lg shadow-lg h-fit sticky top-20">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Buod ng Order</h2>
+
+        <div class="space-y-3 mb-6">
+            <div class="flex justify-between items-center text-lg">
+                <span class="text-gray-700">Subtotal:</span>
+                <span id="summary-subtotal" class="font-semibold text-gray-900">$0.00</span>
+            </div>
+            <div class="flex justify-between items-center text-lg">
+                <span class="text-gray-700">Bayad sa Paghahatid:</span>
+                <span class="font-semibold text-green-600">LIBRE</span>
+            </div>
+            <div class="border-t border-gray-200 pt-3 flex justify-between items-center text-2xl font-bold">
+                <span class="text-gray-900">Total:</span>
+                <span id="summary-total" class="text-blue-600">$0.00</span>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'checkout' %}" id="place-order-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="place_order">
+            <input type="hidden" name="cart_data" id="cart_data_input">
+            <input type="hidden" name="selected_address" id="selected_address_input">
+            <input type="hidden" name="delivery_notes_input" id="delivery_notes_hidden_input">
+
+            <button type="submit" id="place-order-button"
+                    class="w-full bg-blue-600 text-white px-6 py-3 rounded-md font-semibold shadow-md hover:bg-blue-700 transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                Ilagay ang Order
+            </button>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const cart = JSON.parse(localStorage.getItem('cart')) || {};
+        const checkoutCartItems = document.getElementById('checkout-cart-items');
+        const checkoutCartEmptyMessage = document.getElementById('checkout-cart-empty-message');
+        const summarySubtotal = document.getElementById('summary-subtotal');
+        const summaryTotal = document.getElementById('summary-total');
+        const placeOrderButton = document.getElementById('place-order-button');
+        const cartDataInput = document.getElementById('cart_data_input');
+        const selectedAddressInput = document.getElementById('selected_address_input');
+        const deliveryNotesInput = document.getElementById('delivery_notes');
+        const deliveryNotesHiddenInput = document.getElementById('delivery_notes_hidden_input');
+        const addAddressToggle = document.getElementById('add-address-toggle');
+        const addAddressFormContainer = document.getElementById('add-address-form-container');
+        const csrfToken = '{{ csrf_token }}';
+
+        let currentSelectedAddressId = null;
+
+        // I-toggle ang visibility ng form ng pagdagdag ng address
+        addAddressToggle.addEventListener('click', () => {
+            addAddressFormContainer.classList.toggle('hidden');
+            if (!addAddressFormContainer.classList.contains('hidden')) {
+                addAddressToggle.textContent = 'Itago ang Form ng Address';
+            } else {
+                addAddressToggle.innerHTML = '<i class="fas fa-plus mr-2"></i>Magdagdag ng Bagong Address';
+            }
+        });
+
+
+        function renderCheckoutCart() {
+            checkoutCartItems.innerHTML = ''; // Linisin ang mga existing item
+            let subtotal = 0;
+            const itemsInCart = Object.values(cart);
+
+            if (itemsInCart.length === 0) {
+                checkoutCartEmptyMessage.classList.remove('hidden');
+                placeOrderButton.disabled = true;
+                return;
+            } else {
+                checkoutCartEmptyMessage.classList.add('hidden');
+                placeOrderButton.disabled = false;
+            }
+
+            itemsInCart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0';
+                itemDiv.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md">
+                        <div>
+                            <p class="font-medium text-gray-800">${item.name}</p>
+                            <p class="text-sm text-gray-500">${item.quantity} x $${item.price.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <span class="font-semibold text-gray-900">$${itemTotal.toFixed(2)}</span>
+                `;
+                checkoutCartItems.appendChild(itemDiv);
+            });
+
+            summarySubtotal.textContent = `$${subtotal.toFixed(2)}`;
+            summaryTotal.textContent = `$${subtotal.toFixed(2)}`; // Libreng paghahatid, kaya ang total ay katumbas ng subtotal
+
+            // I-update ang hidden input para sa data ng cart
+            cartDataInput.value = JSON.stringify(itemsInCart);
+
+            // Tingnan kung may address na napili kapag hindi walang laman ang cart
+            if (currentSelectedAddressId === null && itemsInCart.length > 0) {
+                 // Subukan na i-pre-select ang default kung available
+                const defaultAddressRadio = document.querySelector('input[name="selected_address"][checked]');
+                if (defaultAddressRadio) {
+                    currentSelectedAddressId = defaultAddressRadio.value;
+                    selectedAddressInput.value = currentSelectedAddressId;
+                } else {
+                    placeOrderButton.disabled = true; // I-disable kung walang default at walang napili
+                }
+            } else if (itemsInCart.length === 0) {
+                placeOrderButton.disabled = true;
+            } else {
+                // Kung may mga item ang cart at may address na napili, i-enable ang pindutan
+                placeOrderButton.disabled = (currentSelectedAddressId === null);
+            }
+        }
+
+        // Makinig sa mga pagbabago sa pagpili ng address
+        document.querySelectorAll('input[name="selected_address"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                currentSelectedAddressId = e.target.value;
+                selectedAddressInput.value = currentSelectedAddressId;
+                renderCheckoutCart(); // I-re-render upang i-update ang estado ng pindutan
+                // Gayundin, i-update ang default na address sa backend sa pamamagitan ng AJAX
+                updateDefaultAddress(currentSelectedAddressId);
+            });
+            if (radio.checked) {
+                currentSelectedAddressId = radio.value;
+                selectedAddressInput.value = currentSelectedAddressId;
+            }
+        });
+
+        // I-update ang hidden delivery notes input sa pagbabago
+        deliveryNotesInput.addEventListener('input', () => {
+            deliveryNotesHiddenInput.value = deliveryNotesInput.value;
+        });
+
+
+        // Function upang i-update ang default na address sa pamamagitan ng AJAX
+        function updateDefaultAddress(addressId) {
+            fetch('/orders/update-address-default/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ address_id: addressId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(data.message);
+                } else {
+                    console.error('Nabigong i-update ang default na address:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error sa pag-update ng default na address:', error);
+            });
+        }
+
+
+        // Hawakan ang pag-submit ng form upang masiguro na naipadala ang data ng cart at address
+        document.getElementById('place-order-form').addEventListener('submit', (e) => {
+            if (!currentSelectedAddressId) {
+                e.preventDefault();
+                alert('Pumili muna ng delivery address bago ilagay ang iyong order.');
+                return;
+            }
+            if (Object.keys(cart).length === 0) {
+                e.preventDefault();
+                alert('Walang laman ang iyong cart. Pakidagdag ng mga produkto sa iyong cart.');
+                return;
+            }
+            // Linisin ang cart mula sa local storage pagkatapos ng matagumpay na pag-submit
+            localStorage.removeItem('cart');
+            updateGlobalCartCount(); // I-update ang bilang ng cart sa nav bar
+        });
+
+        function updateGlobalCartCount() {
+            const itemCount = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-item-count').textContent = itemCount;
+        }
+
+        renderCheckoutCart();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,47 @@
+<!-- main_app/templates/main_app/register.html -->
+{% extends 'base.html' %}
+
+{% block title %}Magrehistro{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Gumawa ng Iyong Account</h1>
+    <form method="post" action="{% url 'register' %}">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="id_username" class="block text-gray-700 text-sm font-bold mb-2">Username:</label>
+            <input type="text" name="username" id="id_username" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            {% if user_form.username.errors %}
+                <p class="text-red-500 text-xs italic">{{ user_form.username.errors }}</p>
+            {% endif %}
+        </div>
+        <div class="mb-4">
+            <label for="id_password1" class="block text-gray-700 text-sm font-bold mb-2">Password:</label>
+            <input type="password" name="password" id="id_password1" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            {% if user_form.password1.errors %}
+                <p class="text-red-500 text-xs italic">{{ user_form.password1.errors }}</p>
+            {% endif %}
+        </div>
+        <div class="mb-6">
+            <label for="id_password2" class="block text-gray-700 text-sm font-bold mb-2">Kumpirmahin ang Password:</label>
+            <input type="password" name="password2" id="id_password2" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            {% if user_form.password2.errors %}
+                <p class="text-red-500 text-xs italic">{{ user_form.password2.errors }}</p>
+            {% endif %}
+        </div>
+        <div class="mb-6">
+            <label for="id_phone_number" class="block text-gray-700 text-sm font-bold mb-2">Numero ng Telepono (Opsyonal):</label>
+            {{ profile_form.phone_number }}
+            {% if profile_form.phone_number.errors %}
+                <p class="text-red-500 text-xs italic">{{ profile_form.phone_number.errors }}</p>
+            {% endif %}
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition duration-300">
+            Magrehistro
+        </button>
+    </form>
+    <p class="text-center text-gray-600 text-sm mt-4">
+        Mayroon ka nang account? <a href="{% url 'login' %}" class="text-blue-600 hover:underline">Mag-log in dito</a>.
+    </p>
+</div>
+{% endblock %}
