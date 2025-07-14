@@ -13,4 +13,11 @@ Here are some ideas to get you started:
 - 📫 How to reach me: ...
 - 😄 Pronouns: ...
 - ⚡ Fun fact: ...
+how to auto create the model of the existing table in database
+python manage.py inspectdb gender_employee_profile > main_app/models.py
+
+create a superuser admin to help dev development
+ register the the model in the admin.py
+
+
 -->

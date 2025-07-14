@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+       
+    body {
+        font-family: Arial;
+        background: #f4f6f9;
+        padding: 20px;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #2c3e50;
+    }
+
+    .dashboard-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        gap: 20px;
+    }
+
+    .chart-box {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        flex: 1 1 30%;
+        min-width: 300px;
+        max-width: 600px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    canvas {
+        width: 100% !important;
+        height: auto !important;
+    }
+</style>
+
+    </style>
+</head>
+<body>
+   <h1>📊 Gender Profile Dashboard</h1>
+
+<div class="dashboard-row">
+    <div class="chart-box">
+        <h3>Gender Distribution (Pie)</h3>
+        <canvas id="pieChart"></canvas>
+    </div>
+
+    <div class="chart-box">
+        <h3>Employment Status (Bar)</h3>
+        <canvas id="barChart"></canvas>
+    </div>
+
+    <div class="chart-box">
+        <h3>Type of Employee (Line)</h3>
+        <canvas id="lineChart"></canvas>
+    </div>
+
+    <div class="chart-box">
+    <h3>Employees by Campus Assignment (Bar)</h3>
+    <canvas id="campusBarChart"></canvas>
+</div>
+
+</div>
+
+
+    <!-- Safely embed the JSON data -->
+{{ gender_labels|json_script:"gender-labels" }}
+{{ gender_counts|json_script:"gender-counts" }}
+{{ employment_labels|json_script:"employment-labels" }}
+{{ employment_counts|json_script:"employment-counts" }}
+{{ type_labels|json_script:"type-labels" }}
+{{ type_counts|json_script:"type-counts" }}
+{{ campus_labels|json_script:"campus-labels" }}
+{{ campus_counts|json_script:"campus-counts" }}
+
+
+    <script src="{% static 'main_app/js/charts.js' %}"></script>
+
+   
+</body>
+</html>

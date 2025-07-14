@@ -1,0 +1,24 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gender Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>Gender Distribution</h2>
+
+    <!-- Canvas -->
+  <!-- Canvas -->
+<canvas id="genderChart"></canvas>
+
+<!-- ✅ Use json_script to encode data correctly for JS -->
+{{ labels|json_script:"labels-data" }}
+{{ counts|json_script:"counts-data" }}
+
+<!-- Script -->
+<script src="{% static 'main_app/js/charts.js' %}"></script>
+
+</body>
+</html>

@@ -80,11 +80,11 @@ DATABASES = {
         'NAME': 'datascience',          # 🔁 your DB name
         'USER': 'root',                # 🔁 default XAMPP MySQL user
         'PASSWORD': '',                # 🔁 default password is empty
-        'HOST': '127.0.0.1',    hdihgshdhjshds       # or 'localhost'
+        'HOST': '127.0.0.1',       # or 'localhost'
         'PORT': '3306',
     }
 }
-
+ 
 
 
 # Password validation
