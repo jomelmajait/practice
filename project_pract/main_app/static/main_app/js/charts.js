@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+// this is for the charts constructing in the dashboard.html
 
 const genderLabels = JSON.parse(document.getElementById("gender-labels").textContent);
 const genderCounts = JSON.parse(document.getElementById("gender-counts").textContent);

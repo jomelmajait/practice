@@ -7,7 +7,7 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 
-
+# this will be the retieval of data in my database 
 class GenderEmployeeProfile(models.Model):
     campus_assignment = models.CharField(max_length=22, blank=True, null=True)
     office_affiliation = models.CharField(max_length=100, blank=True, null=True)
