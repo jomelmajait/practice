@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASC Data Insights</title>
+    <!-- Load Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter font for a clean, modern look -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    <!--
+        This script dynamically injects Lucide icons.
+        It's a simple way to use them without a build process.
+    -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const icons = {
+                'BarChart2': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bar-chart-2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>',
+                'PieChart': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>',
+                'Users': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+                'MapPin': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin"><path d="M12 21.7c-3.1-2.9-7-6.2-7-9.7a7 7 0 1 1 14 0c0 3.5-3.9 6.8-7 9.7z"/><circle cx="12" cy="10" r="3"/></svg>',
+                'ChevronRight': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucude-chevron-right"><path d="m9 18 6-6-6-6"/></svg>',
+                'X': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>'
+            };
+
+            document.querySelectorAll('[data-icon]').forEach(el => {
+                const iconName = el.getAttribute('data-icon');
+                if (icons[iconName]) {
+                    el.innerHTML = icons[iconName];
+                    el.classList.add('inline-block'); // Add common classes for styling
+                }
+            });
+
+            // Vanilla JS for the "Read More" button functionality
+            const aboutSection = document.getElementById('about-section');
+            const toggleButton = aboutSection.querySelector('.toggle-info-btn');
+            const moreInfo = aboutSection.querySelector('.more-info');
+
+            toggleButton.addEventListener('click', () => {
+                const isExpanded = moreInfo.classList.contains('hidden');
+                if (isExpanded) {
+                    moreInfo.classList.remove('hidden');
+                    moreInfo.classList.add('opacity-100');
+                    toggleButton.innerHTML = `Read Less <span data-icon="ChevronRight" class="ml-1 w-4 h-4 transition-transform rotate-90"></span>`;
+                } else {
+                    moreInfo.classList.add('hidden');
+                    moreInfo.classList.remove('opacity-100');
+                    toggleButton.innerHTML = `Read More <span data-icon="ChevronRight" class="ml-1 w-4 h-4 transition-transform"></span>`;
+                }
+            });
+
+            // Vanilla JS for login/register modals
+            const loginModal = document.getElementById('login-modal');
+            const registerModal = document.getElementById('register-modal');
+            const statusMessage = document.getElementById('status-message');
+
+            function openModal(modal) {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modal.classList.add('opacity-100', 'pointer-events-auto');
+            }
+
+            function closeModal(modal) {
+                modal.classList.remove('opacity-100', 'pointer-events-auto');
+                modal.classList.add('opacity-0', 'pointer-events-none');
+            }
+            
+            // Function to show a temporary status message in a custom alert box
+            function showStatus(message, isError = false) {
+                statusMessage.textContent = message;
+                statusMessage.classList.remove('hidden');
+                if (isError) {
+                    statusMessage.classList.add('bg-red-500');
+                    statusMessage.classList.remove('bg-green-500');
+                } else {
+                    statusMessage.classList.add('bg-green-500');
+                    statusMessage.classList.remove('bg-red-500');
+                }
+                setTimeout(() => {
+                    statusMessage.classList.add('hidden');
+                }, 5000);
+            }
+
+            // Open modal buttons
+            document.getElementById('login-btn').addEventListener('click', () => openModal(loginModal));
+            document.getElementById('register-btn').addEventListener('click', () => openModal(registerModal));
+
+            // Close modal buttons and outside clicks
+            document.querySelectorAll('.close-modal-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const modal = e.target.closest('.modal-bg');
+                    closeModal(modal);
+                });
+            });
+
+            document.querySelectorAll('.modal-bg').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modal);
+                    }
+                });
+            });
+
+            // Handle login form submission with fetch to Django backend
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                data.remember_me = formData.get('remember_me') === 'on';
+
+                try {
+                    const response = await fetch('/login/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // Add CSRF token header if needed
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showStatus("Login successful! Redirecting...", false);
+                        closeModal(loginModal);
+                        // >>> IMPORTANT: Change '/your-dashboard-url/' to your actual dashboard URL
+                        window.location.href = '/dashboard/';
+                    } else {
+                        showStatus(`Login failed: ${result.error || JSON.stringify(result)}`, true);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showStatus('An unexpected error occurred.', true);
+                }
+            });
+
+            // Handle register form submission with fetch to Django backend
+            document.getElementById('register-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                // Remove the 'remember_me' field from the registration data, as it's not needed.
+                delete data.remember_me;
+
+                try {
+                    const response = await fetch('/register/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // Add CSRF token header if needed
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showStatus("Registration successful! You can now log in.", false);
+                        closeModal(registerModal);
+                        // Open the login modal after successful registration
+                        openModal(loginModal);
+                    } else {
+                        showStatus(`Registration failed: ${JSON.stringify(result)}`, true);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showStatus('An unexpected error occurred.', true);
+                }
+            });
+
+            // Helper function to get a cookie value
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.startsWith(name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
+</head>
+
+<body class="bg-gray-50 antialiased text-gray-800">
+
+    <!-- Header with Navigation -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-xl font-bold text-indigo-600">BASC Data Insights</div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="#about" class="text-gray-600 hover:text-indigo-600 transition-colors">About</a>
+                <a href="#insights" class="text-gray-600 hover:text-indigo-600 transition-colors">Insights</a>
+            </nav>
+            <!-- Login/Register Buttons -->
+            <div class="space-x-4">
+                <button id="login-btn" class="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Login</button>
+                <button id="register-btn" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-full shadow hover:bg-indigo-700 transition-colors">Register</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Status Message (replaces alerts) -->
+    <div id="status-message" class="hidden fixed top-0 left-1/2 -translate-x-1/2 mt-4 px-6 py-3 rounded-lg text-white font-bold shadow-lg transition-all duration-300 z-[101]">
+        Status Message
+    </div>
+
+    <!-- Hero Section -->
+    <main class="pt-16">
+        <section class="bg-indigo-600 text-white py-24 md:py-32">
+            <div class="container mx-auto px-6 text-center">
+                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight tracking-tight">
+                    Unlocking Insights from BASC Employee Data
+                </h1>
+                <p class="mt-4 text-xl md:text-2xl opacity-90 max-w-2xl mx-auto">
+                    A comprehensive data science project analyzing key metrics to drive better decisions and understanding within the organization.
+                </p>
+                <div class="mt-8 flex justify-center">
+                    <a href="#insights" class="bg-white text-indigo-600 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-100 transition-transform transform hover:scale-105">
+                        Explore the Insights
+                        <span class="inline-block ml-2 w-5 h-5" data-icon="ChevronRight"></span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about-section" class="py-20 md:py-28 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-900">
+                            About the Project
+                        </h2>
+                        <p class="mt-4 text-lg text-gray-600 leading-relaxed">
+                            This data science initiative aims to transform raw BASC employee data into actionable intelligence. By analyzing various dimensions such as gender, employment status, and campus assignments, we provide a clear, data-driven perspective on the workforce. Our goal is to support strategic planning and foster a deeper understanding of the employee landscape.
+                        </p>
+                        <button class="toggle-info-btn mt-6 text-indigo-600 font-semibold flex items-center hover:underline focus:outline-none">
+                            Read More
+                            <span class="ml-1 w-4 h-4 transition-transform" data-icon="ChevronRight"></span>
+                        </button>
+                        <div class="more-info mt-4 text-gray-600 transition-opacity duration-500 hidden">
+                            <p>
+                                We employ various statistical and machine learning techniques to identify trends, patterns, and anomalies within the data. This project is a testament to the power of data to inform and empower an organization.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-indigo-50 rounded-xl shadow-lg">
+                        <!-- Placeholder for a project image or icon -->
+                        <div class="text-center">
+                            <span class="w-16 h-16 mx-auto text-indigo-500" data-icon="BarChart2"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Insights Section -->
+        <section id="insights" class="py-20 md:py-28 bg-gray-100">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">
+                            Key Insights from Our Analysis
+                        </h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+                    Explore the core findings from our data science project, based on your code's analysis of gender, employment status, employee type, and campus assignment.
+                </p>
+
+                <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Gender Distribution Card -->
+                    <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
+                        <div class="flex justify-center items-center h-16 w-16 mx-auto bg-blue-100 text-blue-600 rounded-full">
+                            <span class="w-8 h-8" data-icon="PieChart"></span>
+                        </div>
+                        <h3 class="mt-6 text-xl font-semibold text-gray-900">Gender Distribution</h3>
+                        <p class="mt-2 text-gray-500">
+                            Visualize the gender breakdown of BASC employees to understand workforce demographics.
+                        </p>
+                    </div>
+
+                    <!-- Employment Status Card -->
+                    <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
+                        <div class="flex justify-center items-center h-16 w-16 mx-auto bg-green-100 text-green-600 rounded-full">
+                            <span class="w-8 h-8" data-icon="BarChart2"></span>
+                        </div>
+                        <h3 class="mt-6 text-xl font-semibold text-gray-900">Employment Status</h3>
+                        <p class="mt-2 text-gray-500">
+                            Analyze the distribution of employees by their current employment status.
+                        </p>
+                    </div>
+
+                    <!-- Employee Type Card -->
+                    <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
+                        <div class="flex justify-center items-center h-16 w-16 mx-auto bg-purple-100 text-purple-600 rounded-full">
+                            <span class="w-8 h-8" data-icon="Users"></span>
+                        </div>
+                        <h3 class="mt-6 text-xl font-semibold text-gray-900">Employee Type</h3>
+                        <p class="mt-2 text-gray-500">
+                            Examine the different types of employees within the BASC organization.
+                        </p>
+                    </div>
+
+                    <!-- Campus Assignment Card -->
+                    <div class="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
+                        <div class="flex justify-center items-center h-16 w-16 mx-auto bg-orange-100 text-orange-600 rounded-full">
+                            <span class="w-8 h-8" data-icon="MapPin"></span>
+                        </div>
+                        <h3 class="mt-6 text-xl font-semibold text-gray-900">Campus Assignment</h3>
+                        <p class="mt-2 text-gray-500">
+                            Discover how the employee workforce is distributed across various campuses.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal-bg opacity-0 pointer-events-none fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-75 transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-95">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Login</h3>
+                <button class="close-modal-btn text-gray-400 hover:text-gray-600">
+                    <span data-icon="X"></span>
+                </button>
+            </div>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="login-email" name="email" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="mb-4">
+                    <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="login-password" name="password" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="mb-6 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="login-remember-me" name="remember_me" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <label for="login-remember-me" class="ml-2 block text-sm text-gray-900">
+                            Remember me
+                        </label>
+                    </div>
+                    <a href="#" class="text-sm text-indigo-600 hover:underline">Forgot password?</a>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md font-bold hover:bg-indigo-700 transition-colors">Log In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="modal-bg opacity-0 pointer-events-none fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-75 transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-95">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Register</h3>
+                <button class="close-modal-btn text-gray-400 hover:text-gray-600">
+                    <span data-icon="X"></span>
+                </button>
+            </div>
+            <form id="register-form">
+                <div class="mb-4">
+                    <label for="register-firstname" class="block text-sm font-medium text-gray-700">First Name</label>
+                    <input type="text" id="register-firstname" name="firstname" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="mb-4">
+                    <label for="register-middlename" class="block text-sm font-medium text-gray-700">Middle Name</label>
+                    <input type="text" id="register-middlename" name="middlename" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="mb-4">
+                    <label for="register-lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
+                    <input type="text" id="register-lastname" name="lastname" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="mb-4">
+                    <label for="register-employee-id" class="block text-sm font-medium text-gray-700">BASC Employee ID</label>
+                    <input type="text" id="register-employee-id" name="employee_id" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="mb-4">
+                    <label for="register-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="register-email" name="email" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="mb-4">
+                    <label for="register-password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="register-password" name="password" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="mb-6">
+                    <label for="register-confirm-password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                    <input type="password" id="register-confirm-password" name="confirm_password" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md font-bold hover:bg-indigo-700 transition-colors">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-gray-400">
+                &copy; 2024 BASC Data Science. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+</body>
+</html>

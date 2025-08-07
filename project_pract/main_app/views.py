@@ -59,3 +59,8 @@ def dashboard(request):
     }
     
     return render(request, 'main_app/dashboard.html', context)
+
+
+def index(request):
+   return render(request, 'main_app/index.html')
+
