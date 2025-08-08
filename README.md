@@ -30,6 +30,14 @@ It connects to an existing MySQL database containing employee records and allows
 
 ---
 
+
+## 📸 Screenshots
+
+### Landing Page
+![Landing Page Screenshot](assets/images/landing-page.png)
+
+---
+
 ## 🛠️ Setup Instructions
 
 ### 1. 📥 Clone the Repository
