@@ -3,8 +3,10 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.index, name='index'),  # 👈 default home
-    path('gender-chart/', views.gender_chart, name='gender_chart'),  # 👈 this path matters!
+    path('', views.index, name='index'),  
+    path('gender-chart/', views.gender_chart, name='gender_chart'),  
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('register/', views.register_user, name='register'),
+    path('login/', views.login_user, name='login'),
   
 ]
