@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 07, 2025 at 01:06 PM
+-- Generation Time: Aug 08, 2025 at 06:34 PM
 -- Server version: 11.7.2-MariaDB
 -- PHP Version: 8.2.12
 
@@ -112,7 +112,7 @@ CREATE TABLE `auth_user` (
 --
 
 INSERT INTO `auth_user` (`id`, `password`, `last_login`, `is_superuser`, `username`, `first_name`, `last_name`, `email`, `is_staff`, `is_active`, `date_joined`) VALUES
-(1, 'pbkdf2_sha256$1000000$EShCFtthalsv6wE0f81AdN$FLDmZ2mug0ZXsWCjcgmk9JWdDOVvdqUAquSgxQAop1w=', '2025-07-14 09:57:52.128901', 1, 'jomel', '', '', 'majaitjomel23@gmail.com', 1, 1, '2025-07-14 09:53:51.824610');
+(1, 'pbkdf2_sha256$1000000$EShCFtthalsv6wE0f81AdN$FLDmZ2mug0ZXsWCjcgmk9JWdDOVvdqUAquSgxQAop1w=', '2025-08-07 16:11:38.140154', 1, 'jomel', '', '', 'majaitjomel23@gmail.com', 1, 1, '2025-07-14 09:53:51.824610');
 
 -- --------------------------------------------------------
 
@@ -410,6 +410,31 @@ INSERT INTO `gender_employee_profile` (`id`, `campus_assignment`, `office_affili
 (132, 'Balagtas Campus', 'College of Agriculture', 'Temporary', 'Teaching', 'Female', 32, 'Single', 3, 'Assistant Program Chair', 'Instructor I', 0.00, 68.00, 0, 0, 0, 0, 0, 0, 0, '', 4, '40000-74999', 'Pampanga', '', ''),
 (133, 'Main Campus', 'Clinic', 'Permanent', 'Non-Teaching', 'Female', 53, 'Married', 14, '', 'College Nurse', 160.00, 67.00, 0, 1, 0, 0, 0, 0, 0, '', 4, '40000-74999', '', '', '');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL,
+  `firstname` varchar(255) NOT NULL,
+  `middlename` varchar(255) DEFAULT NULL,
+  `lastname` varchar(255) NOT NULL,
+  `employee_id` varchar(50) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `firstname`, `middlename`, `lastname`, `employee_id`, `email`, `password_hash`, `created_at`) VALUES
+(1, 'Jomel', 'Monden', 'Majait', '2022001617basc', 'jomelmajait@gmail.com', '$2b$12$NtXtK5eBQYdqXoIn40.wmu0gbWy1xqXsyiL9b64DGVl6Ul5Ro23gS', '2025-08-08 04:52:45'),
+(2, 'basc', 'hymn', 'lupang', '754858588948', 'basc45@gmail.com', '$2b$12$/PGl/lA25Z4EPRSjJOZWmecyFZSWFSt0T4YJvDPwE7/X4bUad8FBS', '2025-08-08 16:23:23');
+
 --
 -- Indexes for dumped tables
 --
@@ -494,6 +519,14 @@ ALTER TABLE `gender_employee_profile`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `employee_id` (`employee_id`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -556,6 +589,12 @@ ALTER TABLE `django_migrations`
 --
 ALTER TABLE `gender_employee_profile`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=134;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables
