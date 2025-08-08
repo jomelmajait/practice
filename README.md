@@ -34,7 +34,7 @@ It connects to an existing MySQL database containing employee records and allows
 ## 📸 Screenshots
 
 ### Landing Page
-![Landing Page Screenshot](assets/images/landing-page.png)
+![Landing Page Screenshot](assets/images/landing.png)
 
 ---
 
