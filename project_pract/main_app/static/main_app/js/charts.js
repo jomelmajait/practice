@@ -1,15 +1,107 @@
+// This script is responsible for initializing charts, handling modals, and managing the dark mode toggle.
+
 document.addEventListener('DOMContentLoaded', function() {
+    // --- Dark Mode Toggle Logic ---
+    const themeToggleBtn = document.getElementById('dark-mode-toggle');
+    const html = document.documentElement;
+    let chartInstances = {}; // Store chart instances to update them later
+
+    // Function to update the button text and icon based on the current theme
+    function updateThemeButtonText() {
+        if (html.classList.contains('dark')) {
+            themeToggleBtn.innerHTML = '☀️ Light Mode';
+        } else {
+            themeToggleBtn.innerHTML = '🌙 Dark Mode';
+        }
+    }
+
+    // --- Helper function to retrieve chart theme options based on current mode ---
+    function getChartThemeOptions() {
+        const isDark = html.classList.contains('dark');
+        const textColor = isDark ? '#d1d5db' : '#374151'; // gray-300 or gray-700
+        const gridColor = isDark ? '#4b5563' : '#e5e7eb'; // gray-600 or gray-200
+        const tooltipBg = isDark ? '#1f2937' : '#ffffff';
+        const tooltipBorder = isDark ? '#4b5563' : '#e5e7eb';
+        
+        return {
+            textColor,
+            gridColor,
+            tooltipBg,
+            tooltipBorder
+        };
+    }
+
+    // Function to update the chart colors
+    function updateChartsTheme() {
+        const { textColor, gridColor, tooltipBg, tooltipBorder } = getChartThemeOptions();
+
+        // Iterate through all chart instances and update their options
+        for (const chartId in chartInstances) {
+            const chart = chartInstances[chartId];
+            if (chart) {
+                // Update text color for legend and tooltips
+                chart.options.plugins.legend.labels.color = textColor;
+                chart.options.plugins.tooltip.titleColor = textColor;
+                chart.options.plugins.tooltip.bodyColor = textColor;
+                chart.options.plugins.tooltip.backgroundColor = tooltipBg;
+                chart.options.plugins.tooltip.borderColor = tooltipBorder;
+                
+                // Update scale colors for bar and line charts
+                if (chart.options.scales) {
+                    if (chart.options.scales.x) {
+                        chart.options.scales.x.ticks.color = textColor;
+                        chart.options.scales.x.grid.color = gridColor;
+                    }
+                    if (chart.options.scales.y) {
+                        chart.options.scales.y.ticks.color = textColor;
+                        chart.options.scales.y.grid.color = gridColor;
+                    }
+                }
+                
+                chart.update(); // Redraw the chart with new colors
+            }
+        }
+    }
+
+    // Function to apply the initial theme on page load
+    function applyInitialTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (savedTheme === null && prefersDark)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        updateThemeButtonText();
+    }
+
+    // Event listener for the theme toggle button click
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = html.classList.contains('dark');
+            if (isDark) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateThemeButtonText();
+            updateChartsTheme(); // This is the key change!
+        });
+    }
+    
     // --- Helper function to retrieve Django JSON data ---
     function getJsonData(scriptId) {
         const scriptTag = document.getElementById(scriptId);
         if (scriptTag) {
             return JSON.parse(scriptTag.textContent);
         }
-        return []; // Return an empty array if data isn't found
+        return null; // Return null if data isn't found
     }
 
     // --- Mock Data for demonstration ---
-    // In a real application, this data would come from your Django views
     const mockChartData = {
         gender_labels: ['Male', 'Female', 'Non-Binary'],
         gender_counts: [350, 420, 30],
@@ -37,150 +129,149 @@ document.addEventListener('DOMContentLoaded', function() {
         tertiary: ['#fb923c', '#e879f9', '#6366f1', '#f472b6']
     };
 
-    // Pie Chart for Gender Distribution
-    const pieCtx = document.getElementById('pieChart').getContext('2d');
-    new Chart(pieCtx, {
-        type: 'doughnut',
-        data: {
-            labels: getJsonData('gender-labels') || mockChartData.gender_labels,
-            datasets: [{
-                data: getJsonData('gender-counts') || mockChartData.gender_counts,
-                backgroundColor: chartColors.primary,
-                hoverOffset: 4
-            }]
-        },
-        options: {
+    function createChart(chartId, type, data, options) {
+        const ctx = document.getElementById(chartId).getContext('2d');
+        const newChart = new Chart(ctx, { type, data, options });
+        chartInstances[chartId] = newChart; // Store the instance
+    }
+    
+    // --- Chart Configuration Objects ---
+    // This function will be called on initial load AND on theme changes
+    const pieChartConfig = () => {
+        const { textColor, tooltipBg, tooltipBorder } = getChartThemeOptions();
+        return {
             responsive: true,
             plugins: {
-                legend: {
-                    position: 'bottom',
+                legend: { 
+                    position: 'bottom', 
+                    labels: { 
+                        color: textColor 
+                    } 
                 },
-                tooltip: {
-                    enabled: true
+                tooltip: { 
+                    enabled: true, 
+                    titleColor: textColor, 
+                    bodyColor: textColor,
+                    backgroundColor: tooltipBg,
+                    borderColor: tooltipBorder,
+                    borderWidth: 1
                 }
             }
-        }
-    });
+        };
+    }
+
+    const barChartConfig = () => {
+        const { textColor, gridColor } = getChartThemeOptions();
+        return {
+            responsive: true,
+            plugins: { legend: { display: false }, title: { display: false } },
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { color: textColor }, 
+                    grid: { color: gridColor } 
+                },
+                x: { 
+                    ticks: { color: textColor }, 
+                    grid: { color: gridColor } 
+                }
+            }
+        };
+    }
+    
+    const lineChartConfig = () => {
+        const { textColor, gridColor } = getChartThemeOptions();
+        return {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { color: textColor }, 
+                    grid: { color: gridColor } 
+                },
+                x: { 
+                    ticks: { color: textColor }, 
+                    grid: { color: gridColor } 
+                }
+            }
+        };
+    }
+
+
+    // Pie Chart for Gender Distribution
+    createChart('pieChart', 'doughnut', {
+        labels: getJsonData('gender-labels') || mockChartData.gender_labels,
+        datasets: [{
+            data: getJsonData('gender-counts') || mockChartData.gender_counts,
+            backgroundColor: chartColors.primary,
+            hoverOffset: 4
+        }]
+    }, pieChartConfig());
 
     // Bar Chart for Employment Status
-    const barCtx = document.getElementById('barChart').getContext('2d');
-    new Chart(barCtx, {
-        type: 'bar',
-        data: {
-            labels: getJsonData('employment-labels') || mockChartData.employment_labels,
-            datasets: [{
-                label: 'Number of Employees',
-                data: getJsonData('employment-counts') || mockChartData.employment_counts,
-                backgroundColor: chartColors.secondary[0],
-                borderColor: chartColors.secondary[0],
-                borderWidth: 1,
-                borderRadius: 6,
-                hoverBackgroundColor: chartColors.secondary[1]
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: false,
-                },
-                title: {
-                    display: false,
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
+    createChart('barChart', 'bar', {
+        labels: getJsonData('employment-labels') || mockChartData.employment_labels,
+        datasets: [{
+            label: 'Number of Employees',
+            data: getJsonData('employment-counts') || mockChartData.employment_counts,
+            backgroundColor: chartColors.secondary[0],
+            borderColor: chartColors.secondary[0],
+            borderWidth: 1,
+            borderRadius: 6,
+            hoverBackgroundColor: chartColors.secondary[1]
+        }]
+    }, barChartConfig());
 
     // Line Chart for Employee Type
-    const lineCtx = document.getElementById('lineChart').getContext('2d');
-    new Chart(lineCtx, {
-        type: 'line',
-        data: {
-            labels: getJsonData('type-labels') || mockChartData.type_labels,
-            datasets: [{
-                label: 'Employees by Type',
-                data: getJsonData('type-counts') || mockChartData.type_counts,
-                borderColor: chartColors.tertiary[0],
-                backgroundColor: 'rgba(251, 146, 60, 0.2)',
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: chartColors.tertiary[0],
-                pointRadius: 5,
-                pointHoverRadius: 7
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
+    createChart('lineChart', 'line', {
+        labels: getJsonData('type-labels') || mockChartData.type_labels,
+        datasets: [{
+            label: 'Employees by Type',
+            data: getJsonData('type-counts') || mockChartData.type_counts,
+            borderColor: chartColors.tertiary[0],
+            backgroundColor: 'rgba(251, 146, 60, 0.2)',
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: chartColors.tertiary[0],
+            pointRadius: 5,
+            pointHoverRadius: 7
+        }]
+    }, lineChartConfig());
     
     // Bar Chart for Campus Assignment
-    const campusBarCtx = document.getElementById('campusBarChart').getContext('2d');
-    new Chart(campusBarCtx, {
-        type: 'bar',
-        data: {
-            labels: getJsonData('campus-labels') || mockChartData.campus_labels,
-            datasets: [{
-                label: 'Employees by Campus',
-                data: getJsonData('campus-counts') || mockChartData.campus_counts,
-                backgroundColor: chartColors.tertiary[2],
-                borderColor: chartColors.tertiary[2],
-                borderWidth: 1,
-                borderRadius: 6,
-                hoverBackgroundColor: chartColors.tertiary[3]
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: false,
-                },
-                title: {
-                    display: false,
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
+    createChart('campusBarChart', 'bar', {
+        labels: getJsonData('campus-labels') || mockChartData.campus_labels,
+        datasets: [{
+            label: 'Employees by Campus',
+            data: getJsonData('campus-counts') || mockChartData.campus_counts,
+            backgroundColor: chartColors.tertiary[2],
+            borderColor: chartColors.tertiary[2],
+            borderWidth: 1,
+            borderRadius: 6,
+            hoverBackgroundColor: chartColors.tertiary[3]
+        }]
+    }, barChartConfig());
 
     // --- Employee Table Rendering ---
     const employeeTableBody = document.getElementById('employee-table-body');
     function renderEmployeeTable() {
         employeeTableBody.innerHTML = '';
-        mockEmployeeData.forEach(employee => {
+        const data = mockEmployeeData; // Using mock data for the example
+        data.forEach(employee => {
             const row = document.createElement('tr');
-            row.className = 'hover:bg-gray-50';
+            row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors';
             row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${employee.id}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${employee.name}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${employee.department}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${employee.id}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${employee.name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${employee.department}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-700 text-green-800 dark:text-green-200">
                         ${employee.status}
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button data-employee-id="${employee.id}" class="view-profile-btn text-blue-600 hover:text-blue-900 mr-4">
+                    <button data-employee-id="${employee.id}" class="view-profile-btn text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-500 mr-4">
                         View Profile
                     </button>
                 </td>
@@ -251,25 +342,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
+    
     // Form submission for Add Employee Modal (mock)
     document.getElementById('add-employee-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        // This is where you would send data to your Django backend
         const form = e.target;
         const newEmployee = {
             id: form.id.value,
             name: form.name.value,
             department: form.department.value,
             status: form.status.value,
-            // Add other fields as needed
         };
         
         console.log('New employee to be added:', newEmployee);
-        // For this example, we just hide the modal
         hideModal(addEmployeeModal);
-        
-        // You would typically make a fetch or form submission here
-        // e.g., fetch('/api/add-employee/', { method: 'POST', body: JSON.stringify(newEmployee) })
     });
+    
+    // Call the initial theme function on window load to set up everything
+    // This is the correct place to call the theme update after all charts are initialized
+    applyInitialTheme();
+    updateChartsTheme();
 });
