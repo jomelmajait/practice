@@ -1,88 +1,251 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en" class="h-full bg-gray-100">
 <head>
-    <title>Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Insights Dashboard</title>
+    <!-- Use Tailwind CSS for a modern and responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font-awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-       
-    body {
-        font-family: Arial;
-        background: #f4f6f9;
-        padding: 20px;
-    }
+        /* Custom styles for the scrollbar to match the theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
 
-    h1 {
-        text-align: center;
-        margin-bottom: 30px;
-        color: #2c3e50;
-    }
+        /* Chart.js responsive sizing */
+        canvas {
+            max-width: 100% !important;
+            height: auto !important;
+        }
 
-    .dashboard-row {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-around;
-        gap: 20px;
-    }
-
-    .chart-box {
-        background: #fff;
-        border-radius: 12px;
-        padding: 20px;
-        flex: 1 1 30%;
-        min-width: 300px;
-        max-width: 600px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    canvas {
-        width: 100% !important;
-        height: auto !important;
-    }
-</style>
-
+        /* Modal backdrop */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s ease;
+        }
     </style>
 </head>
-<body>
-   <h1>📊 Gender Profile Dashboard</h1>
+<body class="h-full">
+    <div class="flex h-full">
 
-<div class="dashboard-row">
-    <div class="chart-box">
-        <h3>Gender Distribution (Pie)</h3>
-        <canvas id="pieChart"></canvas>
-    </div>
-
-    <div class="chart-box">
-        <h3>Employment Status (Bar)</h3>
-        <canvas id="barChart"></canvas>
-    </div>
-
-    <div class="chart-box">
-        <h3>Type of Employee (Line)</h3>
-        <canvas id="lineChart"></canvas>
-    </div>
-
-    <div class="chart-box">
-    <h3>Employees by Campus Assignment (Bar)</h3>
-    <canvas id="campusBarChart"></canvas>
+        <!-- Sidebar -->
+        <aside class="flex flex-col w-64 bg-slate-800 text-white min-h-screen">
+            <div class="p-6 text-center text-2xl font-bold border-b border-slate-700">
+                <i class="fas fa-chart-line mr-2"></i> HR Insights
+            </div>
+            <nav class="flex-1 px-4 py-6 space-y-2">
+                <a href="#" class="flex items-center p-3 rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors bg-slate-700">
+                    <i class="fas fa-home w-5 mr-3"></i> Overview
+                </a>
+                <a href="#employees" class="flex items-center p-3 rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors">
+                    <i class="fas fa-users w-5 mr-3"></i> Employee List
+                </a>
+                <a href="#reports" class="flex items-center p-3 rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors">
+                    <i class="fas fa-file-alt w-5 mr-3"></i> Reports
+                </a>
+                <a href="#settings" class="flex items-center p-3 rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors">
+                    <i class="fas fa-cog w-5 mr-3"></i> Settings
+                </a>
+            </nav>
+          <div class="px-4 py-4 border-t border-slate-700">
+    <!-- Logout Form for Django -->
+    <form id="logout-form" action="{% url 'logout' %}" method="post" class="w-full">
+        {% csrf_token %}
+        <button type="submit" class="flex items-center w-full p-3 rounded-lg text-sm font-medium text-red-400 hover:bg-slate-700 transition-colors">
+            <i class="fas fa-sign-out-alt w-5 mr-3"></i> Logout
+        </button>
+    </form>
 </div>
+        </aside>
 
-</div>
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-8">
+
+            <!-- Dashboard Header -->
+            <header class="mb-8">
+                <h1 class="text-4xl font-extrabold text-gray-900 leading-tight">
+                    <i class="fas fa-tachometer-alt mr-2 text-blue-500"></i> Employee Profile Dashboard
+                </h1>
+                <p class="text-gray-500 mt-2">A comprehensive overview of key employee metrics and demographics.</p>
+            </header>
+
+            <!-- Overview Section -->
+            <section class="mb-12">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Overview & Key Metrics</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-2xl shadow-xl p-6 transition-transform hover:scale-105 duration-200">
+                        <h3 class="text-lg font-bold text-gray-700 mb-4">Gender Distribution (Pie)</h3>
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-xl p-6 transition-transform hover:scale-105 duration-200">
+                        <h3 class="text-lg font-bold text-gray-700 mb-4">Employment Status (Bar)</h3>
+                        <canvas id="barChart"></canvas>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-xl p-6 transition-transform hover:scale-105 duration-200">
+                        <h3 class="text-lg font-bold text-gray-700 mb-4">Type of Employee (Line)</h3>
+                        <canvas id="lineChart"></canvas>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-xl p-6 transition-transform hover:scale-105 duration-200">
+                        <h3 class="text-lg font-bold text-gray-700 mb-4">Employees by Campus Assignment (Bar)</h3>
+                        <canvas id="campusBarChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- User Overview Section -->
+            <section id="employees" class="mb-12">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Employee Roster</h2>
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <div class="p-6 flex justify-between items-center border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-700">Detailed Employee Insights</h3>
+                        <button id="add-employee-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full shadow-lg transition-colors">
+                            <i class="fas fa-user-plus mr-2"></i>Add Employee
+                        </button>
+                    </div>
+                    <div class="p-6 overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        ID
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Name
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Department
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="employee-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Employee data will be populated here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Detailed Employee Profile Modal -->
+    <div id="profile-modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="modal-backdrop absolute inset-0 opacity-0 transition-opacity duration-300"></div>
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-2xl transform scale-95 transition-transform duration-300 relative z-10">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-2xl font-bold text-gray-800">Employee Profile</h3>
+                <button class="close-modal-btn text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Name</p>
+                        <p id="profile-name" class="text-lg font-semibold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Employee ID</p>
+                        <p id="profile-id" class="text-lg font-semibold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Department</p>
+                        <p id="profile-department" class="text-lg font-semibold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Status</p>
+                        <p id="profile-status" class="text-lg font-semibold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Campus</p>
+                        <p id="profile-campus" class="text-lg font-semibold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Start Date</p>
+                        <p id="profile-start-date" class="text-lg font-semibold text-gray-900"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-200 text-right">
+                <button class="close-modal-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-full transition-colors">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Employee Modal -->
+    <div id="add-employee-modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="modal-backdrop absolute inset-0 opacity-0 transition-opacity duration-300"></div>
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-2xl transform scale-95 transition-transform duration-300 relative z-10">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-2xl font-bold text-gray-800">Add New Employee</h3>
+                <button class="close-modal-btn text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <form id="add-employee-form" class="p-6 space-y-4">
+                <div>
+                    <label for="new-employee-name" class="block text-sm font-medium text-gray-700">Name</label>
+                    <input type="text" id="new-employee-name" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label for="new-employee-id" class="block text-sm font-medium text-gray-700">Employee ID</label>
+                    <input type="text" id="new-employee-id" name="id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label for="new-employee-dept" class="block text-sm font-medium text-gray-700">Department</label>
+                    <input type="text" id="new-employee-dept" name="department" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label for="new-employee-status" class="block text-sm font-medium text-gray-700">Status</label>
+                    <select id="new-employee-status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option>Full-Time</option>
+                        <option>Part-Time</option>
+                        <option>Contractor</option>
+                    </select>
+                </div>
+                <div class="border-t border-gray-200 pt-6 flex justify-end">
+                    <button type="button" class="close-modal-btn mr-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-full transition-colors">Cancel</button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full shadow-lg transition-colors">Add Employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
 
-    <!-- Safely embed the JSON data -->
-{{ gender_labels|json_script:"gender-labels" }}
-{{ gender_counts|json_script:"gender-counts" }}
-{{ employment_labels|json_script:"employment-labels" }}
-{{ employment_counts|json_script:"employment-counts" }}
-{{ type_labels|json_script:"type-labels" }}
-{{ type_counts|json_script:"type-counts" }}
-{{ campus_labels|json_script:"campus-labels" }}
-{{ campus_counts|json_script:"campus-counts" }}
+    <!-- Django data scripts - these are kept from your original code -->
+    {{ gender_labels|json_script:"gender-labels" }}
+    {{ gender_counts|json_script:"gender-counts" }}
+    {{ employment_labels|json_script:"employment-labels" }}
+    {{ employment_counts|json_script:"employment-counts" }}
+    {{ type_labels|json_script:"type-labels" }}
+    {{ type_counts|json_script:"type-counts" }}
+    {{ campus_labels|json_script:"campus-labels" }}
+    {{ campus_counts|json_script:"campus-counts" }}
 
 
-    <script src="{% static 'main_app/js/charts.js' %}"></script>
-
-   
+    <!-- All JavaScript is now linked here -->
+   <script src="{% static 'main_app/js/charts.js' %}"></script>
 </body>
 </html>

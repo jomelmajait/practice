@@ -8,6 +8,7 @@ from django.views.decorators.http import require_http_methods
 import json
 import MySQLdb
 import bcrypt
+from django.contrib.auth import logout
 
 
 DB_SETTINGS = {
@@ -147,3 +148,7 @@ def dashboard(request):
 def index(request):
    return render(request, 'main_app/index.html')
 
+
+def logout_view(request):
+    logout(request)
+    return redirect('index')
