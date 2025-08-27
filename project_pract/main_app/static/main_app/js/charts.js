@@ -15,19 +15,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- Helper function to retrieve chart theme options based on current mode ---
+// --- Helper function to retrieve chart theme options based on current mode ---
     function getChartThemeOptions() {
         const isDark = html.classList.contains('dark');
-        const textColor = isDark ? '#d1d5db' : '#374151'; // gray-300 or gray-700
-        const gridColor = isDark ? '#4b5563' : '#e5e7eb'; // gray-600 or gray-200
-        const tooltipBg = isDark ? '#1f2937' : '#ffffff';
+        
+        const textColor = isDark ? '#ffffff' : '#000000'; 
+        const gridColor = isDark ? '#4b5563' : '#e5e7eb'; 
+        const tooltipBg = isDark ? '#1f2937' : '#ffffff'; 
         const tooltipBorder = isDark ? '#4b5563' : '#e5e7eb';
+        const tooltipTextColor = isDark ? '#ffffff' : '#000000';
         
         return {
             textColor,
             gridColor,
             tooltipBg,
-            tooltipBorder
+            tooltipBorder,
+            tooltipTextColor
         };
     }
 
