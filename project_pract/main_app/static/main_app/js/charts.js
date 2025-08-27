@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // Pie Chart for Gender Distribution
-    createChart('pieChart', 'doughnut', {
+    createChart('pieChart', 'pie', {
         labels: getJsonData('gender-labels') || mockChartData.gender_labels,
         datasets: [{
             data: getJsonData('gender-counts') || mockChartData.gender_counts,
