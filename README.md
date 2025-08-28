@@ -56,13 +56,13 @@ pip install -r requirements.txt
 pip install django mysqlclient
 
 
-### 4. ⚙️ Connect to Your MySQL Database
+### 4. ⚙️ Connect to the database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'your_database_name',
-        'USER': 'your_mysql_user',
-        'PASSWORD': 'your_password',
+        'NAME': 'datascience',
+        'USER': '',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
@@ -86,5 +86,5 @@ python manage.py runserver
 
 
 👨‍💻 Author
-Developed by [JOMEL M MAJAIT]
+Developed by: [JOMEL M. MAJAIT],[John Jermaine Sison],[Angelo De Leon]
 BASC Data Science Practice – 2025
