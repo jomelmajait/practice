@@ -10,6 +10,16 @@ import MySQLdb
 import bcrypt
 from django.contrib.auth import logout
 
+import json
+import bcrypt
+import MySQLdb
+import random
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.core.mail import send_mail
+from django.conf import settings
+
 
 DB_SETTINGS = {
     "host": "127.0.0.1",
@@ -37,28 +47,68 @@ def register_user(request):
         password = data.get("password")
         confirm_password = data.get("confirm_password")
 
+        # 1. Validation
         if not all([firstname, lastname, employee_id, email, password, confirm_password]):
             return JsonResponse({"error": "All required fields must be filled."}, status=400)
         
         if password != confirm_password:
             return JsonResponse({"error": "Passwords do not match."}, status=400)
         
-        # Hash the password for security
+        # 2. Hash password at gumawa ng 6-digit OTP
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        otp_code = str(random.randint(100000, 999999))
 
         with get_db_connection() as db:
             cursor = db.cursor()
             try:
-                sql = "INSERT INTO users (firstname, middlename, lastname, employee_id, email, password_hash) VALUES (%s, %s, %s, %s, %s, %s)"
-                cursor.execute(sql, (firstname, middlename, lastname, employee_id, email, hashed_password))
+                # 3. I-save sa database (naka-set ang is_active sa 0 o False muna)
+                sql = """INSERT INTO users 
+                         (firstname, middlename, lastname, employee_id, email, password_hash, otp_code, is_active) 
+                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+                cursor.execute(sql, (firstname, middlename, lastname, employee_id, email, hashed_password, otp_code, 0))
                 db.commit()
-                return JsonResponse({"message": "Registration successful! You can now log in."}, status=201)
+
+                # 4. I-send ang OTP sa email ng user
+                subject = "Account Verification Code"
+                message = f"Hi {firstname},\n\nYour verification code is: {otp_code}\n\nPlease enter this code to activate your account."
+                email_from = settings.EMAIL_HOST_USER
+                recipient_list = [email]
+                
+                send_mail(subject, message, email_from, recipient_list)
+
+                return JsonResponse({
+                    "message": "Registration successful! Please check your email for the verification code."
+                }, status=201)
+
             except MySQLdb.IntegrityError:
                 return JsonResponse({"error": "An account with this Employee ID or email already exists."}, status=409)
+                
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON data."}, status=400)
     except Exception as e:
+        # Error handling kung sakaling pumalya ang SMTP
         return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
+    
+@csrf_exempt
+@require_http_methods(["POST"])
+def verify_otp(request):
+    data = json.loads(request.body)
+    email = data.get("email")
+    user_otp = data.get("otp")
+
+    with get_db_connection() as db:
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("SELECT otp_code FROM users WHERE email = %s", (email,))
+        user = cursor.fetchone()
+
+        if user and user['otp_code'] == user_otp:
+            # I-activate ang user at burahin ang OTP
+            cursor.execute("UPDATE users SET is_active = 1, otp_code = NULL WHERE email = %s", (email,))
+            db.commit()
+            return JsonResponse({"message": "Account verified! You can now login."}, status=200)
+        else:
+            return JsonResponse({"error": "Invalid code."}, status=400)
+        
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -78,8 +128,16 @@ def login_user(request):
             cursor.execute(sql, (email,))
             user = cursor.fetchone()
 
+            # 1. Check muna kung may nahanap na user at kung tama ang password
             if user and bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+                
+                # 2. DITO MO ILALAGAY: Check kung active na ang account
+                if user['is_active'] == 0:
+                    return JsonResponse({"error": "Please verify your email first."}, status=403)
+
+                # 3. Kung tama ang password AT is_active=1, tsaka lang mag-success
                 return JsonResponse({"message": "Login successful!"}, status=200)
+            
             else:
                 return JsonResponse({"error": "Invalid email or password."}, status=401)
                 
@@ -87,7 +145,7 @@ def login_user(request):
         return JsonResponse({"error": "Invalid JSON data."}, status=400)
     except Exception as e:
         return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
-
+    
 def gender_chart(request):
     gender_data = GenderEmployeeProfile.objects.values('sex').annotate(count=Count('sex'))
     labels = [item['sex'] for item in gender_data]

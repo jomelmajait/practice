@@ -408,5 +408,88 @@
         </div>
     </footer>
 
+    <div id="otp-modal" class="modal-bg hidden fixed inset-0 z-[110] flex items-center justify-center bg-gray-900 bg-opacity-75 transition-opacity duration-300">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm mx-4 transform transition-all scale-100">
+        <div class="text-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-900">Verify Email</h3>
+            <p class="text-sm text-gray-500 mt-2">Nagsend kami ng code sa email mo. Pakilagay sa ibaba:</p>
+        </div>
+        <div class="mb-4">
+            <input type="text" id="otpCode" maxlength="6" class="block w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 font-bold" placeholder="000000">
+        </div>
+        <button onclick="confirmOTP()" class="w-full bg-green-600 text-white py-2 px-4 rounded-md font-bold hover:bg-green-700 transition-colors">Verify & Login</button>
+        <button onclick="document.getElementById('otp-modal').classList.add('hidden')" class="w-full mt-2 text-gray-500 text-sm hover:underline">Cancel</button>
+    </div>
+</div>
+
+  <script>
+    // Variable para matandaan ang email na tinetest
+let currentEmail = ""; 
+
+// Makinig sa submission ng login form
+document.getElementById('login-form').addEventListener('submit', async function(e) {
+    e.preventDefault(); // Pigilan ang page refresh
+
+    const emailInput = document.getElementById('login-email').value;
+    const passwordInput = document.getElementById('login-password').value;
+    currentEmail = emailInput;
+
+    try {
+        const response = await fetch('/login/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: emailInput, password: passwordInput })
+        });
+
+        const result = await response.json();
+
+        if (response.status === 200) {
+            alert("Login Success!");
+            window.location.href = "/dashboard/";
+        } 
+        else if (response.status === 403) {
+            // DITO NATIN PAPALABASIN ANG MODAL
+            // Itago muna ang login modal (optional)
+            document.getElementById('login-modal').classList.add('opacity-0', 'pointer-events-none');
+            
+            // Ipakita ang OTP modal (tanggalin ang 'hidden')
+            const otpModal = document.getElementById('otp-modal');
+            otpModal.classList.remove('hidden');
+        } 
+        else {
+            alert(result.error || "Invalid Credentials");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("May problema sa koneksyon sa server.");
+    }
+});
+
+// Function para sa OTP Verification
+async function confirmOTP() {
+    const code = document.getElementById('otpCode').value;
+
+    const response = await fetch('/verify-otp/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            email: currentEmail, 
+            otp: code 
+        })
+    });
+
+    const result = await response.json();
+
+    if (response.status === 200) {
+        alert("Verified na! Pwede ka na mag-login.");
+        document.getElementById('otp-modal').classList.add('hidden');
+        // Ipakita ulit ang login modal para makapag-login na siya
+        document.getElementById('login-modal').classList.remove('opacity-0', 'pointer-events-none');
+    } else {
+        alert(result.error);
+    }
+}
+  </script>
+
 </body>
 </html>
