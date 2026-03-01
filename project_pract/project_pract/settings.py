@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-ssca+$*4243%chr@+i-jqvo4n3*p(89r1_tm)l3ju9zoic(n-*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['jomelmajait.pythonanywhere.com']
 
 
 # Application definition
@@ -76,15 +76,10 @@ WSGI_APPLICATION = 'project_pract.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'datascience',          # 🔁 your DB name
-        'USER': 'root',                # 🔁 default XAMPP MySQL user
-        'PASSWORD': '',                # 🔁 default password is empty
-        'HOST': '127.0.0.1',       # or 'localhost'
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
- 
 
 
 # Password validation
@@ -122,6 +117,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

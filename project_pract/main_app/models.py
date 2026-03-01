@@ -7,7 +7,7 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 
-# this will be the retieval of data in my database 
+# this will be the retieval of data in my database
 class GenderEmployeeProfile(models.Model):
     campus_assignment = models.CharField(max_length=22, blank=True, null=True)
     office_affiliation = models.CharField(max_length=100, blank=True, null=True)
@@ -36,7 +36,20 @@ class GenderEmployeeProfile(models.Model):
     employee_id = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'gender_employee_profile'
 
+
+class UserAccount(models.Model):
+    firstname = models.CharField(max_length=100)
+    middlename = models.CharField(max_length=100, blank=True, null=True)
+    lastname = models.CharField(max_length=100)
+    employee_id = models.CharField(max_length=50, unique=True)
+    email = models.EmailField(unique=True)
+    password_hash = models.CharField(max_length=255)
+    otp_code = models.CharField(max_length=6, blank=True, null=True)
+    is_active = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.firstname} {self.lastname}"
 
